@@ -4,8 +4,17 @@ import (
 	"bufio"
 	"io"
 	"os"
-	"strings"
 )
+
+func trimError(err error) string {
+	s := err.Error()
+	for i, c := range s {
+		if c == ' ' {
+			return s[i+1:]
+		}
+	}
+	return s
+}
 
 func readWrite(r io.Reader, w io.Writer) error {
 	scanner := bufio.NewScanner(r)
@@ -36,12 +45,12 @@ func main() {
 			}
 			f, err := os.Open(filePath)
 			if err != nil {
-				os.Stderr.WriteString("ft_cat: " + strings.TrimPrefix(err.Error(), "open ") + "\n")
+				os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
 				continue
 			}
 			defer f.Close()
 			if err := readWrite(f, os.Stdout); err != nil {
-				os.Stderr.WriteString(err.Error())
+				os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
 			}
 		}
 	}
