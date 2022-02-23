@@ -21,6 +21,9 @@ func TestConvertImage(t *testing.T) {
 		{"png to gif", []string{"../convert", "-i=png", "-o=gif", "../testdata"}, nil},
 		{"gif to jpg", []string{"../convert", "-i=gif", "-o=jpg", "../testdata"}, nil},
 		{"gif to png", []string{"../convert", "-i=gif", "-o=png", "../testdata"}, nil},
+		{"jpg to jpg", []string{"../convert", "-i=jpg", "-o=jpg", "../testdata"}, nil},
+		{"png to png", []string{"../convert", "-i=png", "-o=png", "../testdata"}, nil},
+		{"gif to gif", []string{"../convert", "-i=gif", "-o=gif", "../testdata"}, nil},
 		{"no such dir", []string{"../convert", "./hoge"}, nil},
 		{"no such dir", []string{"../convert", "-i=jpg", "-o=png", "./hoge"}, nil},
 		{"no such dir", []string{"../convert", "-i=jpg", "-o=gif", "./hoge"}, nil},
@@ -38,13 +41,21 @@ func TestConvertImage(t *testing.T) {
 			t.Parallel()
 			os.Args = tt.arg
 			res := imgconv.ConvertImage()
-			if tt.want == nil && res != nil {
-				t.Errorf("imgconv.ConvertImage(): expected: nil, got: %v", res)
-			} else if tt.want != nil && res == nil {
-				t.Errorf("imgconv.ConvertImage(): expected: %v, got: nil", tt.want)
-			} else if (tt.want != nil && res != nil) && (tt.want.Error() != res.Error()) {
-				t.Errorf("imgconv.ConvertImage(): expected: %v, got: %v", tt.want, res)
-			}
+			assertError(t, tt.want, res)
 		})
+	}
+}
+
+func assertError(t *testing.T, expect, got error) {
+	t.Helper()
+	if expect == nil && got == nil {
+		return
+	}
+	if expect != nil && got == nil {
+		t.Errorf("expected: %v, got: nil", expect)
+	} else if expect == nil && got != nil {
+		t.Errorf("expected: nil, got: %v", got)
+	} else if expect.Error() != got.Error() {
+		t.Errorf("expected: %v, got: %v", expect, got)
 	}
 }
