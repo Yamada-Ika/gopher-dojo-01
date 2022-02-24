@@ -1,17 +1,10 @@
-NAME		:= ft_cat
-ifndef WITH_BONUS
-	SRCS	:= main.go
-else
-	SRCS	:= main.go
-endif
+NAME	:= ft_cat
+SRCS	:= main.go
 
 all: $(NAME)
 
 $(NAME): $(SRCS)
 	go build -o $(NAME) $(SRCS)
-
-bonus:
-	make WITH_BONUS=1
 
 clean:
 	rm -rf $(NAME)
