@@ -20,7 +20,7 @@ type myImage image.Image
 
 func writeImage(file io.Writer, img myImage) (err error) {
 	switch *outputFileFormat {
-	case "jpg":
+	case "jpg", "jpeg":
 		err = jpeg.Encode(file, img, nil)
 	case "png":
 		err = png.Encode(file, img)
@@ -32,7 +32,7 @@ func writeImage(file io.Writer, img myImage) (err error) {
 
 func readImage(file io.Reader) (img myImage, err error) {
 	switch *inputFileFormat {
-	case "jpg":
+	case "jpg", "jpeg":
 		img, err = jpeg.Decode(file)
 	case "png":
 		img, err = png.Decode(file)
@@ -69,13 +69,13 @@ func convertImage(in_path string, out_path string) (err error) {
 
 func validateFlag() error {
 	switch *inputFileFormat {
-	case "jpg", "png", "gif":
+	case "jpg", "jpeg", "png", "gif":
 		break
 	default:
 		return errors.New("error: invalid extension")
 	}
 	switch *outputFileFormat {
-	case "jpg", "png", "gif":
+	case "jpg", "jpeg", "png", "gif":
 		break
 	default:
 		return errors.New("error: invalid extension")
@@ -97,23 +97,17 @@ var outputFileFormat = flag.String("o", "png", "output file extension")
 // If multiple directories are passed, it will search the directories in the order they are passed.
 // Even if a text file or other file not to be converted is found during the search, it will continue to convert other files.
 func ConvertImage() error {
-	flag.Parse()
-	args := flag.Args()
-	if len(args) == 0 {
-		return errors.New("error: invalid argument")
-	}
-	if err := validateFlag(); err != nil {
+	if err := validateArgs(); err != nil {
 		return err
 	}
-	inputFileExt := "." + *inputFileFormat
-	outputFileExt := "." + *outputFileFormat
-	for _, dir := range args {
+	inputFileExt, outputFileExt := "."+*inputFileFormat, "."+*outputFileFormat
+	for _, dir := range flag.Args() {
 		filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", trimError(err))
 				return err
 			}
-			if info.IsDir() || strings.HasSuffix(path, outputFileExt) {
+			if info.IsDir() || isValidFileExtent(path, outputFileExt) {
 				return nil
 			}
 			if !strings.HasSuffix(path, inputFileExt) {
@@ -121,7 +115,7 @@ func ConvertImage() error {
 				return nil
 			}
 			in_path := path
-			out_path := replaceSuffix(path, inputFileExt, outputFileExt)
+			out_path := replaceFileExtent(path, inputFileExt, outputFileExt)
 			if err := convertImage(in_path, out_path); err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", trimError(err))
 				return nil
