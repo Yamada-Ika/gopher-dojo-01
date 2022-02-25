@@ -13,7 +13,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type myImage image.Image
@@ -86,6 +85,18 @@ func validateFlag() error {
 var inputFileFormat = flag.String("i", "jpg", "input file extension")
 var outputFileFormat = flag.String("o", "png", "output file extension")
 
+func validateArgs() error {
+	flag.Parse()
+	args := flag.Args()
+	if len(args) == 0 {
+		return errors.New("error: invalid argument")
+	}
+	if err := validateFlag(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ConvertImage converts image files that exist in a directory passed as a command line argument.
 // The file to be converted is specified by -i.
 // The file to be converted is specified by -o as well.
@@ -110,7 +121,7 @@ func ConvertImage() error {
 			if info.IsDir() || isValidFileExtent(path, outputFileExt) {
 				return nil
 			}
-			if !strings.HasSuffix(path, inputFileExt) {
+			if !isValidFileExtent(path, inputFileExt) {
 				fmt.Fprintf(os.Stderr, "error: %s is not a valid file\n", path)
 				return nil
 			}
