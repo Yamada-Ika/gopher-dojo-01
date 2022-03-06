@@ -39,5 +39,5 @@ func ValidateArgs() (dirs []string, from, to string, err error) {
 	if err != nil {
 		return nil, "", "", err
 	}
-	return os.Args[1:], from, to, nil
+	return flag.Args(), from, to, nil
 }
