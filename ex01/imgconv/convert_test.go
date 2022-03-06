@@ -14,7 +14,7 @@ import (
 	"example.com/ex01/imgconv"
 )
 
-func TestConvertImage(t *testing.T) {
+func TestConvert(t *testing.T) {
 	tests := []struct {
 		name string
 		arg  []string
@@ -45,7 +45,7 @@ func TestConvertImage(t *testing.T) {
 	// tt := tests[0]
 	// t.Run(tt.name, func(t *testing.T) {
 	// 	os.Args = tt.arg
-	// 	res := imgconv.ConvertImage()
+	// 	res := imgconv.Convert()
 	// 	assertError(t, tt.want, res)
 	// 	assertDirStruct(t, tt.arg[len(tt.arg)-1], 0)
 	// })
@@ -56,7 +56,7 @@ func TestConvertImage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			os.Args = tt.arg
-			res := imgconv.ConvertImage()
+			res := imgconv.Convert()
 			assertError(t, tt.want, res)
 		})
 	}

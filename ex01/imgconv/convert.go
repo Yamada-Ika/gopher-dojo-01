@@ -17,87 +17,56 @@ import (
 
 type myImage image.Image
 
-func writeImage(file io.Writer, img myImage) (err error) {
-	switch *outputFileFormat {
-	case "jpg", "jpeg":
+func writeImage(file io.Writer, img myImage, ext string) (err error) {
+	switch ext {
+	case ".jpg", ".jpeg":
 		err = jpeg.Encode(file, img, nil)
-	case "png":
+	case ".png":
 		err = png.Encode(file, img)
-	case "gif":
+	case ".gif":
 		err = gif.Encode(file, img, nil)
 	}
 	return err
 }
 
-func readImage(file io.Reader) (img myImage, err error) {
-	switch *inputFileFormat {
-	case "jpg", "jpeg":
+func readImage(file io.Reader, ext string) (img myImage, err error) {
+	switch ext {
+	case ".jpg", ".jpeg":
 		img, err = jpeg.Decode(file)
-	case "png":
+	case ".png":
 		img, err = png.Decode(file)
-	case "gif":
+	case ".gif":
 		img, err = gif.Decode(file)
 	}
 	return img, err
 }
 
-func convertImage(in_path string, out_path string) (err error) {
-	in_file, err := os.Open(in_path)
+func convert(inPath string, outPath string) (err error) {
+	inFile, err := os.Open(inPath)
 	if err != nil {
 		return err
 	}
-	in_img, err := readImage(in_file)
+	inImg, err := readImage(inFile, filepath.Ext(inPath))
 	if err != nil {
+		return err
+	}
+	outFile, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	if err := writeImage(outFile, inImg, filepath.Ext(outPath)); err != nil {
 		return err
 	}
 	defer func() {
-		err = in_file.Close()
+		err = inFile.Close()
 	}()
-	out_file, err := os.Create(out_path)
-	if err != nil {
-		return err
-	}
-	if err := writeImage(out_file, in_img); err != nil {
-		return err
-	}
 	defer func() {
-		err = out_file.Close()
+		err = outFile.Close()
 	}()
 	return nil
 }
 
-func validateFlag() error {
-	switch *inputFileFormat {
-	case "jpg", "jpeg", "png", "gif":
-		break
-	default:
-		return errors.New("error: invalid extension")
-	}
-	switch *outputFileFormat {
-	case "jpg", "jpeg", "png", "gif":
-		break
-	default:
-		return errors.New("error: invalid extension")
-	}
-	return nil
-}
-
-var inputFileFormat = flag.String("i", "jpg", "input file extension")
-var outputFileFormat = flag.String("o", "png", "output file extension")
-
-func validateArgs() error {
-	flag.Parse()
-	args := flag.Args()
-	if len(args) == 0 {
-		return errors.New("error: invalid argument")
-	}
-	if err := validateFlag(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// ConvertImage converts image files that exist in a directory passed as a command line argument.
+// Convert converts image files that exist in a directory passed as a command line argument.
 // The file to be converted is specified by -i.
 // The file to be converted is specified by -o as well.
 // The image formats supported are jpeg, png, and gif.
@@ -107,28 +76,23 @@ func validateArgs() error {
 // It also returns an error if the appropriate image format is not specified.
 // If multiple directories are passed, it will search the directories in the order they are passed.
 // Even if a text file or other file not to be converted is found during the search, it will continue to convert other files.
-func ConvertImage() (convErr error) {
-	if err := validateArgs(); err != nil {
-		return err
-	}
+// func Convert() (convErr error) {
+func Convert(dirs []string, inExt, outExt string) (convErr error) {
 	convErr = errors.New("")
-	inputFileExt, outputFileExt := "."+*inputFileFormat, "."+*outputFileFormat
 	for _, dir := range flag.Args() {
 		filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				convErr = fmt.Errorf("error: %s\n%v", trimError(err), convErr)
 				return nil
 			}
-			if info.IsDir() || isValidFileExtent(path, outputFileExt) {
+			if info.IsDir() || isValidFileExtent(path, outExt) {
 				return nil
 			}
-			if !isValidFileExtent(path, inputFileExt) {
+			if !isValidFileExtent(path, inExt) {
 				convErr = fmt.Errorf("error: %s is not a valid file\n%v", path, convErr)
 				return nil
 			}
-			in_path := path
-			out_path := replaceFileExtent(path, inputFileExt, outputFileExt)
-			if err := convertImage(in_path, out_path); err != nil {
+			if err := convert(path, getOutPath(path, outExt)); err != nil {
 				convErr = fmt.Errorf("error: %s\n%v", trimError(err), convErr)
 				return nil
 			}

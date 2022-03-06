@@ -8,7 +8,13 @@ import (
 )
 
 func main() {
-	if err := imgconv.ConvertImage(); err != nil {
+	dirs, from, to, err := imgconv.ValidateArgs()
+	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+	err = imgconv.Convert(dirs, from, to)
+	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)
 	}
