@@ -80,10 +80,9 @@ func convert(inPath string, outPath string) (err error) {
 func Convert(dirs []string, inExt, outExt string) (convErr error) {
 	convErr = errors.New("")
 	for _, dir := range flag.Args() {
-		filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
+		walkErr := filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
-				convErr = fmt.Errorf("error: %s\n%v", trimError(err), convErr)
-				return nil
+				return err
 			}
 			if info.IsDir() || isValidFileExtent(path, outExt) {
 				return nil
@@ -98,6 +97,7 @@ func Convert(dirs []string, inExt, outExt string) (convErr error) {
 			}
 			return nil
 		})
+		convErr = fmt.Errorf("error: %s\n%v", trimError(walkErr), convErr)
 	}
 	return convErr
 }
