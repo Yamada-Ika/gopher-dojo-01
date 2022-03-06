@@ -3,7 +3,6 @@ package imgconv
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"image"
 	"image/gif"
@@ -79,7 +78,7 @@ func convert(inPath string, outPath string) (err error) {
 // func Convert() (convErr error) {
 func Convert(dirs []string, inExt, outExt string) (convErr error) {
 	convErr = errors.New("")
-	for _, dir := range flag.Args() {
+	for _, dir := range dirs {
 		walkErr := filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -97,7 +96,9 @@ func Convert(dirs []string, inExt, outExt string) (convErr error) {
 			}
 			return nil
 		})
-		convErr = fmt.Errorf("error: %s\n%v", trimError(walkErr), convErr)
+		if walkErr != nil {
+			convErr = fmt.Errorf("error: %s\n%v", trimError(walkErr), convErr)
+		}
 	}
 	return convErr
 }
