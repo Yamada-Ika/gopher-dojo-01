@@ -1,7 +1,7 @@
 package imgconv_test
 
 import (
-	"errors"
+	"fmt"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -14,164 +14,178 @@ import (
 	"example.com/ex01/imgconv"
 )
 
-func TestConvert(t *testing.T) {
-	tests := []struct {
-		name string
-		arg  []string
-		want error
-	}{
-		{"normal", []string{"../convert", "../testdata"}, nil},
-		// {"jpg to png", []string{"../convert", "-i=jpg", "-o=png", "../testdata"}, nil},
-		// {"jpg to gif", []string{"../convert", "-i=jpg", "-o=gif", "../testdata"}, nil},
-		// {"png to jpg", []string{"../convert", "-i=png", "-o=jpg", "../testdata"}, nil},
-		// {"png to gif", []string{"../convert", "-i=png", "-o=gif", "../testdata"}, nil},
-		// {"gif to jpg", []string{"../convert", "-i=gif", "-o=jpg", "../testdata"}, nil},
-		// {"gif to png", []string{"../convert", "-i=gif", "-o=png", "../testdata"}, nil},
-		// {"jpg to jpg", []string{"../convert", "-i=jpg", "-o=jpg", "../testdata"}, nil},
-		// {"png to png", []string{"../convert", "-i=png", "-o=png", "../testdata"}, nil},
-		// {"gif to gif", []string{"../convert", "-i=gif", "-o=gif", "../testdata"}, nil},
-		// {"no such dir", []string{"../convert", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=jpg", "-o=png", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=jpg", "-o=gif", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=png", "-o=jpg", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=png", "-o=gif", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=gif", "-o=jpg", "./hoge"}, nil},
-		// {"no such dir", []string{"../convert", "-i=gif", "-o=png", "./hoge"}, nil},
-		// {"no argument", []string{"../convert"}, errors.New("error: invalid argument")},
-		// {"invalid option", []string{"../convert", "-i=hoge", "-o=huga", "../testdata"}, errors.New("error: invalid extension")},
-		// {"invalid option", []string{"../convert", "-i=png", "-o=txt", "../testdata"}, errors.New("error: invalid extension")},
+func isPng(image string) (bool, error) {
+	f, err := os.Open(image)
+	if err != nil {
+		return false, err
 	}
-	// With image format test
-	// tt := tests[0]
-	// t.Run(tt.name, func(t *testing.T) {
-	// 	os.Args = tt.arg
-	// 	res := imgconv.Convert()
-	// 	assertError(t, tt.want, res)
-	// 	assertDirStruct(t, tt.arg[len(tt.arg)-1], 0)
-	// })
+	_, err = png.Decode(f)
+	if err != nil {
+		return false, fmt.Errorf("%s is not png\n", image)
+	}
+	defer f.Close()
+	defer os.Remove(image)
+	return true, nil
+}
 
-	// Without image format teset
+func isGif(image string) (bool, error) {
+	f, err := os.Open(image)
+	if err != nil {
+		return false, err
+	}
+	_, err = gif.Decode(f)
+	if err != nil {
+		return false, fmt.Errorf("%s is not gif\n", image)
+	}
+	defer f.Close()
+	defer os.Remove(image)
+	return true, nil
+}
+
+func isJpg(image string) (bool, error) {
+	f, err := os.Open(image)
+	if err != nil {
+		return false, err
+	}
+	_, err = jpeg.Decode(f)
+	if err != nil {
+		return false, fmt.Errorf("%s is not jpg\n", image)
+	}
+	defer f.Close()
+	defer os.Remove(image)
+	return true, nil
+}
+
+func TestExportConvert(t *testing.T) {
+	tests := []struct {
+		name    string
+		arg1    string
+		arg2    string
+		wantErr bool
+	}{
+		// TODO: Add error test cases.
+		{"jpg to png", "../testdata/ExportConvert/jpg1.jpg", "../testdata/ExportConvert/jpg1.png", false},
+		{"jpg to jpeg", "../testdata/ExportConvert/jpg2.jpg", "../testdata/ExportConvert/jpg2.jpeg", false},
+		{"jpg to gif", "../testdata/ExportConvert/jpg3.jpg", "../testdata/ExportConvert/jpg3.gif", false},
+		{"jpeg to gif", "../testdata/ExportConvert/jpeg1.jpeg", "../testdata/ExportConvert/jpeg1.png", false},
+		{"jpeg to jpg", "../testdata/ExportConvert/jpeg2.jpeg", "../testdata/ExportConvert/jpeg2.jpg", false},
+		{"jpeg to gif", "../testdata/ExportConvert/jpeg3.jpeg", "../testdata/ExportConvert/jpeg3.gif", false},
+		{"png to jpg", "../testdata/ExportConvert/png1.png", "../testdata/ExportConvert/png1.jpg", false},
+		{"png to jpeg", "../testdata/ExportConvert/png2.png", "../testdata/ExportConvert/png2.jpeg", false},
+		{"png to gif", "../testdata/ExportConvert/png3.png", "../testdata/ExportConvert/png3.gif", false},
+		{"gif to jpg", "../testdata/ExportConvert/gif1.gif", "../testdata/ExportConvert/gif1.jpg", false},
+		{"gif to jpeg", "../testdata/ExportConvert/gif2.gif", "../testdata/ExportConvert/gif2.jpeg", false},
+		{"gif to png", "../testdata/ExportConvert/gif3.gif", "../testdata/ExportConvert/gif3.png", false},
+		{"secret", "../testdata/ExportConvert/.secret.jpg", "../testdata/ExportConvert/.secret.png", false},
+		// {"ascii", "../testdata/ExportConvert/txt.jpg", "../testdata/ExportConvert/txt.png", true},
+		// {"invalid image info", "../testdata/ExportConvert/png.jpg", "../testdata/ExportConvert/png.png", true},
+	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			os.Args = tt.arg
-			res := imgconv.Convert()
-			assertError(t, tt.want, res)
+			err := imgconv.ExportConvert(tt.arg1, tt.arg2)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ExportConvert() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if strings.HasSuffix(tt.arg2, ".png") {
+				if ok, err := isPng(tt.arg2); !ok {
+					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			} else if strings.HasSuffix(tt.arg2, ".gif") {
+				if ok, err := isGif(tt.arg2); !ok {
+					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			} else if strings.HasSuffix(tt.arg2, ".jpg") || strings.HasSuffix(tt.arg2, ".jpeg") {
+				if ok, err := isJpg(tt.arg2); !ok {
+					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+			}
 		})
 	}
 }
 
-func assertError(t *testing.T, expect, got error) {
-	t.Helper()
-	if expect == nil && got == nil {
-		return
+func TestConvert(t *testing.T) {
+	tests := []struct {
+		name         string
+		dirs         []string
+		inExt        string
+		outExt       string
+		wantErr      bool
+		expDirStruct []string
+		createFiles  []string
+	}{
+		// TODO: Add test cases.
+		{"normal", []string{"../testdata/Convert/normal"}, "jpg", "png", true,
+			[]string{
+				"../testdata/Convert/normal/test1.png",
+				"../testdata/Convert/normal/test2.gif",
+				"../testdata/Convert/normal/test3.jpeg",
+				"../testdata/Convert/normal/test4.jpg",
+				"../testdata/Convert/normal/test4.png"},
+			[]string{
+				"../testdata/Convert/normal/test4.png"},
+		},
+		{"subdir", []string{"../testdata/Convert/inSubDir"}, "jpg", "png", true,
+			[]string{
+				"../testdata/Convert/inSubDir/test1.png",
+				"../testdata/Convert/inSubDir/test2.gif",
+				"../testdata/Convert/inSubDir/test3.jpeg",
+				"../testdata/Convert/inSubDir/test4.jpg",
+				"../testdata/Convert/inSubDir/test4.png",
+				"../testdata/Convert/inSubDir/subdir/test1.png",
+				"../testdata/Convert/inSubDir/subdir/test2.gif",
+				"../testdata/Convert/inSubDir/subdir/test3.jpeg",
+				"../testdata/Convert/inSubDir/subdir/test4.jpg",
+				"../testdata/Convert/inSubDir/subdir/test4.png",
+			},
+			[]string{
+				"../testdata/Convert/inSubDir/test4.png",
+				"../testdata/Convert/inSubDir/subdir/test4.png",
+			},
+		},
 	}
-	if expect != nil && got == nil {
-		t.Errorf("expected: %v, got: nil", expect)
-	} else if expect == nil && got != nil {
-		t.Errorf("expected: nil, got: %v", got)
-	} else if expect.Error() != got.Error() {
-		t.Errorf("expected: %v, got: %v", expect, got)
-	}
-}
-
-var targetImages = [][]string{
-	{
-		"../testdata/sub_dir1/.jpeg.png",
-		"../testdata/sub_dir1/test2.png",
-		"../testdata/sub_dir1/.jpg.png",
-		"../testdata/sub_dir1/test4.png",
-		"../testdata/.jpeg.png",
-		"../testdata/test2.png",
-		"../testdata/.jpg.png",
-		"../testdata/test4.png",
-	},
-}
-
-var expectedDirStruct = []string{
-	"../testdata",
-	"../testdata/.gif.gif.gif",
-	"../testdata/.DS_Store",
-	"../testdata/test6.jpg",
-	"../testdata/sub_dir1",
-	"../testdata/sub_dir1/.gif.gif.gif",
-	"../testdata/sub_dir1/.DS_Store",
-	"../testdata/sub_dir1/test6.jpg",
-	"../testdata/sub_dir1/.jpg.jpg.jpg",
-	"../testdata/sub_dir1/test7.png",
-	"../testdata/sub_dir1/.jpeg.jpeg",
-	"../testdata/sub_dir1/test3.png",
-	"../testdata/sub_dir1/test2.jpg",
-	"../testdata/sub_dir1/.jpg.jpg",
-	"../testdata/sub_dir1/.png.png",
-	"../testdata/sub_dir1/.gif.gif",
-	"../testdata/sub_dir1/.jpeg.jpeg.jpeg",
-	"../testdata/sub_dir1/.png.png.png",
-	"../testdata/sub_dir1/test8.jpeg",
-	"../testdata/sub_dir1/test5.gif",
-	"../testdata/sub_dir1/test4.jpeg",
-	"../testdata/sub_dir1/test1.gif",
-	"../testdata/.jpg.jpg.jpg",
-	"../testdata/test7.png",
-	"../testdata/.jpeg.jpeg",
-	"../testdata/test3.png",
-	"../testdata/test2.jpg",
-	"../testdata/.jpg.jpg",
-	"../testdata/.png.png",
-	"../testdata/.gif.gif",
-	"../testdata/.png.png.png",
-	"../testdata/test5.gif",
-	"../testdata/test4.jpeg",
-	"../testdata/test1.gif",
-}
-
-func isValidFileExtent(path string) bool {
-	return strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg") || strings.HasSuffix(path, ".png") || strings.HasSuffix(path, ".gif")
-}
-
-func validateImageFormat(image string) error {
-	f, err := os.Open(image)
-	if err != nil {
-		return err
-	}
-	if strings.HasSuffix(image, ".jpg") || strings.HasSuffix(image, ".jpeg") {
-		_, err = jpeg.Decode(f)
-		if err != nil {
-			return errors.New("unmatch file extension and file type")
-		}
-	} else if strings.HasSuffix(image, ".png") {
-		_, err = png.Decode(f)
-		if err != nil {
-			return errors.New("unmatch file extension and file type")
-		}
-	} else if strings.HasSuffix(image, ".gif") {
-		_, err = gif.Decode(f)
-		if err != nil {
-			return errors.New("unmatch file extension and file type")
-		}
-	}
-	defer f.Close()
-	defer os.Remove(image)
-	return nil
-}
-
-func validateAllImageFormat(targetImages []string, resultDirStruct map[string]int) error {
-	for _, image := range targetImages {
-		if _, ok := resultDirStruct[image]; ok {
-			if isValidFileExtent(image) {
-				if err := validateImageFormat(image); err != nil {
-					return err
-				}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if err := imgconv.Convert(tt.dirs, tt.inExt, tt.outExt); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-		} else {
-			return errors.New("image file does not exist")
-		}
+			assertDirStruct(t, tt.dirs[0], tt.expDirStruct)
+			assertImageFiles(t, tt.createFiles)
+		})
 	}
-	return nil
 }
 
-func assertDirStruct(t *testing.T, testDir string, index int) {
+func assertImageFiles(t *testing.T, files []string) {
+	t.Helper()
+	for _, file := range files {
+		if strings.HasSuffix(file, ".png") {
+			if ok, _ := isPng(file); !ok {
+				t.Errorf("assertImageFiles : %s is not png", file)
+				return
+			}
+		} else if strings.HasSuffix(file, ".gif") {
+			if ok, _ := isGif(file); !ok {
+				t.Errorf("assertImageFiles : %s is not gif", file)
+				return
+			}
+		} else if strings.HasSuffix(file, ".jpg") || strings.HasSuffix(file, ".jpeg") {
+			if ok, _ := isJpg(file); !ok {
+				t.Errorf("assertImageFiles : %s is not jpg", file)
+				return
+			}
+		}
+	}
+}
+
+func assertDirStruct(t *testing.T, testDir string, expDir []string) {
 	t.Helper()
 	res := make(map[string]int)
 	filepath.WalkDir(testDir, func(path string, info fs.DirEntry, err error) error {
@@ -180,15 +194,9 @@ func assertDirStruct(t *testing.T, testDir string, index int) {
 		}
 		return nil
 	})
-
-	if err := validateAllImageFormat(targetImages[index], res); err != nil {
-		t.Errorf("error: %v", err)
-		return
-	}
-
-	for _, image := range expectedDirStruct {
-		if _, ok := res[image]; !ok {
-			t.Errorf("error")
+	for _, file := range expDir {
+		if _, ok := res[file]; !ok {
+			t.Errorf("assertDirStruct : %s is not created", file)
 			return
 		}
 	}
