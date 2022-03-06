@@ -32,26 +32,31 @@ func main() {
 	if len(args) == 1 {
 		if err := readWrite(os.Stdin, os.Stdout); err != nil {
 			os.Stderr.WriteString(err.Error())
+			os.Exit(1)
 		}
 	} else {
 		for _, filePath := range args[1:] {
-			finfo, err := os.Stat(filePath)
-			if err != nil {
-				os.Stderr.WriteString(err.Error())
-			}
-			if finfo.IsDir() {
-				os.Stderr.WriteString("ft_cat: " + filePath + ": Is a directory\n")
-				continue
-			}
-			f, err := os.Open(filePath)
-			if err != nil {
-				os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
-				continue
-			}
-			defer f.Close()
-			if err := readWrite(f, os.Stdout); err != nil {
-				os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
-			}
+			func() {
+				finfo, err := os.Stat(filePath)
+				if err != nil {
+					os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
+					return
+				}
+				if finfo.IsDir() {
+					os.Stderr.WriteString("ft_cat: " + filePath + ": Is a directory\n")
+					return
+				}
+				f, err := os.Open(filePath)
+				if err != nil {
+					os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
+					return
+				}
+				defer f.Close()
+				if err := readWrite(f, os.Stdout); err != nil {
+					os.Stderr.WriteString("ft_cat: " + trimError(err) + "\n")
+					os.Exit(1)
+				}
+			}()
 		}
 	}
 }
