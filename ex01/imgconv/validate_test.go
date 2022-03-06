@@ -27,17 +27,17 @@ func TestValidateArgs(t *testing.T) {
 			os.Args = tt.args
 			gotDirs, gotFrom, gotTo, err := imgconv.ValidateArgs()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidatePArgs() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotDirs, tt.wantDirs) {
-				t.Errorf("ValidatePArgs() gotDirs = %v, want %v", gotDirs, tt.wantDirs)
+				t.Errorf("ValidateArgs() gotDirs = %v, want %v", gotDirs, tt.wantDirs)
 			}
 			if gotFrom != tt.wantFrom {
-				t.Errorf("ValidatePArgs() gotFrom = %v, want %v", gotFrom, tt.wantFrom)
+				t.Errorf("ValidateArgs() gotFrom = %v, want %v", gotFrom, tt.wantFrom)
 			}
 			if gotTo != tt.wantTo {
-				t.Errorf("ValidatePArgs() gotTo = %v, want %v", gotTo, tt.wantTo)
+				t.Errorf("ValidateArgs() gotTo = %v, want %v", gotTo, tt.wantTo)
 			}
 		})
 	}
