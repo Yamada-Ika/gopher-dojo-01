@@ -1,7 +1,6 @@
 package imgconv_test
 
 import (
-	"flag"
 	"os"
 	"reflect"
 	"testing"
@@ -13,47 +12,39 @@ func TestValidateArgs(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
-		iFlag    string
-		oFlag    string
 		wantDirs []string
 		wantFrom string
 		wantTo   string
 		wantErr  bool
 	}{
 		// TODO: Add test cases.
-		{"default", []string{"cmd", "/some/directory"}, "", "", []string{"/some/directory"}, "jpg", "png", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "png", "jpg", []string{"/some/directory"}, "png", "jpg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "png", "jpeg", []string{"/some/directory"}, "png", "jpeg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "png", "gif", []string{"/some/directory"}, "png", "gif", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "png", "png", []string{"/some/directory"}, "png", "png", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpg", "png", []string{"/some/directory"}, "jpg", "png", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpg", "jpeg", []string{"/some/directory"}, "jpg", "jpeg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpg", "gif", []string{"/some/directory"}, "jpg", "gif", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpg", "jpg", []string{"/some/directory"}, "jpg", "jpg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpeg", "gif", []string{"/some/directory"}, "jpeg", "gif", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpeg", "png", []string{"/some/directory"}, "jpeg", "png", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpeg", "jpg", []string{"/some/directory"}, "jpeg", "jpg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "jpeg", "jpeg", []string{"/some/directory"}, "jpeg", "jpeg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "gif", "jpg", []string{"/some/directory"}, "gif", "jpg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "gif", "png", []string{"/some/directory"}, "gif", "png", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "gif", "jpeg", []string{"/some/directory"}, "gif", "jpeg", false},
-		{"assign format", []string{"cmd", "/some/directory"}, "gif", "gif", []string{"/some/directory"}, "gif", "gif", false},
-		{"no args", []string{"cmd"}, "", "", nil, "", "", true},
-		{"invalid format", []string{"cmd", "/some/directory"}, "txt", "bmp", nil, "", "", true},
-		{"invalid format", []string{"cmd", "/some/directory"}, "jpg", "txt", nil, "", "", true},
-		{"invalid format", []string{"cmd", "/some/directory"}, "mp3", "mp4", nil, "", "", true},
+		{"default", []string{"cmd", "/some/directory"}, []string{"/some/directory"}, "jpg", "png", false},
+		{"assign format", []string{"cmd", "-i=png", "-o=jpg", "/some/directory"}, []string{"/some/directory"}, "png", "jpg", false},
+		{"assign format", []string{"cmd", "-i=png", "-o=jpeg", "/some/directory"}, []string{"/some/directory"}, "png", "jpeg", false},
+		{"assign format", []string{"cmd", "-i=png", "-o=gif", "/some/directory"}, []string{"/some/directory"}, "png", "gif", false},
+		{"assign format", []string{"cmd", "-i=png", "-o=png", "/some/directory"}, []string{"/some/directory"}, "png", "png", false},
+		{"assign format", []string{"cmd", "-i=jpg", "-o=png", "/some/directory"}, []string{"/some/directory"}, "jpg", "png", false},
+		{"assign format", []string{"cmd", "-i=jpg", "-o=jpeg", "/some/directory"}, []string{"/some/directory"}, "jpg", "jpeg", false},
+		{"assign format", []string{"cmd", "-i=jpg", "-o=gif", "/some/directory"}, []string{"/some/directory"}, "jpg", "gif", false},
+		{"assign format", []string{"cmd", "-i=jpg", "-o=jpg", "/some/directory"}, []string{"/some/directory"}, "jpg", "jpg", false},
+		{"assign format", []string{"cmd", "-i=jpeg", "-o=gif", "/some/directory"}, []string{"/some/directory"}, "jpeg", "gif", false},
+		{"assign format", []string{"cmd", "-i=jpeg", "-o=png", "/some/directory"}, []string{"/some/directory"}, "jpeg", "png", false},
+		{"assign format", []string{"cmd", "-i=jpeg", "-o=jpg", "/some/directory"}, []string{"/some/directory"}, "jpeg", "jpg", false},
+		{"assign format", []string{"cmd", "-i=jpeg", "-o=jpeg", "/some/directory"}, []string{"/some/directory"}, "jpeg", "jpeg", false},
+		{"assign format", []string{"cmd", "-i=gif", "-o=jpg", "/some/directory"}, []string{"/some/directory"}, "gif", "jpg", false},
+		{"assign format", []string{"cmd", "-i=gif", "-o=png", "/some/directory"}, []string{"/some/directory"}, "gif", "png", false},
+		{"assign format", []string{"cmd", "-i=gif", "-o=jpeg", "/some/directory"}, []string{"/some/directory"}, "gif", "jpeg", false},
+		{"assign format", []string{"cmd", "-i=gif", "-o=gif", "/some/directory"}, []string{"/some/directory"}, "gif", "gif", false},
+		{"no args", []string{"cmd"}, nil, "", "", true},
+		{"invalid format", []string{"cmd", "-i=txt", "-o=bmp", "/some/directory"}, nil, "", "", true},
+		{"invalid format", []string{"cmd", "-i=jpg", "-o=txt", "/some/directory"}, nil, "", "", true},
+		{"invalid format", []string{"cmd", "-i=mp3", "-o=mp4", "/some/directory"}, nil, "", "", true},
 	}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			os.Args = tt.args
-			if tt.iFlag != "" {
-				flag.CommandLine.Set("i", tt.iFlag)
-			}
-			if tt.oFlag != "" {
-				flag.CommandLine.Set("o", tt.oFlag)
-			}
 			gotDirs, gotFrom, gotTo, err := imgconv.ValidateArgs()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
