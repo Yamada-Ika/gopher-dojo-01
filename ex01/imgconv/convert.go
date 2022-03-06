@@ -107,32 +107,33 @@ func validateArgs() error {
 // It also returns an error if the appropriate image format is not specified.
 // If multiple directories are passed, it will search the directories in the order they are passed.
 // Even if a text file or other file not to be converted is found during the search, it will continue to convert other files.
-func ConvertImage() error {
+func ConvertImage() (convErr error) {
 	if err := validateArgs(); err != nil {
 		return err
 	}
+	convErr = errors.New("")
 	inputFileExt, outputFileExt := "."+*inputFileFormat, "."+*outputFileFormat
 	for _, dir := range flag.Args() {
 		filepath.WalkDir(dir, func(path string, info fs.DirEntry, err error) error {
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s\n", trimError(err))
-				return err
+				convErr = fmt.Errorf("error: %s\n%v", trimError(err), convErr)
+				return nil
 			}
 			if info.IsDir() || isValidFileExtent(path, outputFileExt) {
 				return nil
 			}
 			if !isValidFileExtent(path, inputFileExt) {
-				fmt.Fprintf(os.Stderr, "error: %s is not a valid file\n", path)
+				convErr = fmt.Errorf("error: %s is not a valid file\n%v", path, convErr)
 				return nil
 			}
 			in_path := path
 			out_path := replaceFileExtent(path, inputFileExt, outputFileExt)
 			if err := convertImage(in_path, out_path); err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s\n", trimError(err))
+				convErr = fmt.Errorf("error: %s\n%v", trimError(err), convErr)
 				return nil
 			}
 			return nil
 		})
 	}
-	return nil
+	return convErr
 }
