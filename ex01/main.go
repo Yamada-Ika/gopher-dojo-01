@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	dirs, from, to, err := imgconv.ValidateArgs()
+	dirs, from, to, err := imgconv.ValidateArgs(os.Args)
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
 		os.Exit(1)

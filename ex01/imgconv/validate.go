@@ -3,8 +3,15 @@ package imgconv
 import (
 	"errors"
 	"flag"
-	"os"
 )
+
+var inputExtFlag string
+var outputExtFlag string
+
+func init() {
+	flag.StringVar(&inputExtFlag, "i", "jpg", "input file extension")
+	flag.StringVar(&outputExtFlag, "o", "png", "output file extension")
+}
 
 func validateFlag() (from, to string, err error) {
 	switch inputExtFlag {
@@ -22,19 +29,11 @@ func validateFlag() (from, to string, err error) {
 	return inputExtFlag, outputExtFlag, nil
 }
 
-var inputExtFlag string
-var outputExtFlag string
-
-func init() {
-	flag.StringVar(&inputExtFlag, "i", "jpg", "input file extension")
-	flag.StringVar(&outputExtFlag, "o", "png", "input file extension")
-}
-
-func ValidateArgs() (dirs []string, from, to string, err error) {
-	if len(os.Args) == 1 {
+func ValidateArgs(args []string) (dirs []string, from, to string, err error) {
+	if len(args) == 1 {
 		return nil, "", "", errors.New("error: invalid argument\n")
 	}
-	flag.Parse()
+	flag.CommandLine.Parse(args[1:])
 	from, to, err = validateFlag()
 	if err != nil {
 		return nil, "", "", err
