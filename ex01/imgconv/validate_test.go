@@ -2,10 +2,13 @@ package imgconv_test
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"example.com/ex01/imgconv"
 )
+
+var mtx sync.Mutex
 
 func TestValidateArgs(t *testing.T) {
 	tests := []struct {
@@ -45,7 +48,9 @@ func TestValidateArgs(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+			mtx.Lock()
 			gotDirs, gotFrom, gotTo, err := imgconv.ValidateArgs(tt.args)
+			mtx.Unlock()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
 				return
