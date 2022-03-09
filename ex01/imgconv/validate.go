@@ -29,6 +29,9 @@ func validateFlag() (from, to string, err error) {
 	return inputExtFlag, outputExtFlag, nil
 }
 
+// ValidateArgs is a function that retrieves the directory containing the
+// image file and the extension of the image file from a command line argument.
+// It returns an error if the arguments are not appropriate.
 func ValidateArgs(args []string) (dirs []string, from, to string, err error) {
 	if len(args) == 1 {
 		return nil, "", "", errors.New("error: invalid argument\n")
