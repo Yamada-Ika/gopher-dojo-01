@@ -75,7 +75,6 @@ func convert(inPath string, outPath string) (err error) {
 // It also returns an error if the appropriate image format is not specified.
 // If multiple directories are passed, it will search the directories in the order they are passed.
 // Even if a text file or other file not to be converted is found during the search, it will continue to convert other files.
-// func Convert() (convErr error) {
 func Convert(dirs []string, inExt, outExt string) (convErr error) {
 	convErr = errors.New("")
 	for _, dir := range dirs {
