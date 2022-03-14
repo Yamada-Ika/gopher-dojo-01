@@ -5,26 +5,26 @@ import (
 	"strings"
 )
 
-func isValidFileExtent(path string, ext string) bool {
+func isValidFileExtent(ext string) bool {
 	switch ext {
-	case ".jpg", ".jpeg":
-		return strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg")
+	case "jpg", "jpeg", "png", "gif":
+		break
 	default:
-		return strings.HasSuffix(path, string(ext))
+		return false
+	}
+	return true
+}
+
+func hasValidFileExtent(path string, ext string) bool {
+	switch ext {
+	case "jpg", "jpeg":
+		return filepath.Ext(path) == ".jpg" || filepath.Ext(path) == ".jpeg"
+	default:
+		return filepath.Ext(path) == "."+ext
 	}
 }
 
-func trimError(err error) string {
-	s := err.Error()
-	for i, c := range s {
-		if c == ' ' {
-			return s[i+1:]
-		}
-	}
-	return s
-}
-
-func getOutPath(path string, outExt string) (outPath string) {
+func genOutPath(path string, outExt string) (outPath string) {
 	return replaceFileExtent(path, filepath.Ext(path), "."+outExt)
 }
 

@@ -10,7 +10,7 @@ import (
 
 var mtx sync.Mutex
 
-func TestValidateArgs(t *testing.T) {
+func TestParse(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
@@ -49,20 +49,20 @@ func TestValidateArgs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			mtx.Lock()
-			gotDirs, gotFrom, gotTo, err := imgconv.ValidateArgs(tt.args)
+			gotDirs, gotFrom, gotTo, err := imgconv.Parse(tt.args)
 			mtx.Unlock()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateArgs() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotDirs, tt.wantDirs) {
-				t.Errorf("ValidateArgs() gotDirs = %v, want %v", gotDirs, tt.wantDirs)
+				t.Errorf("Parse() gotDirs = %v, want %v", gotDirs, tt.wantDirs)
 			}
 			if gotFrom != tt.wantFrom {
-				t.Errorf("ValidateArgs() gotFrom = %v, want %v", gotFrom, tt.wantFrom)
+				t.Errorf("Parse() gotFrom = %v, want %v", gotFrom, tt.wantFrom)
 			}
 			if gotTo != tt.wantTo {
-				t.Errorf("ValidateArgs() gotTo = %v, want %v", gotTo, tt.wantTo)
+				t.Errorf("Parse() gotTo = %v, want %v", gotTo, tt.wantTo)
 			}
 		})
 	}
