@@ -6,6 +6,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -54,6 +55,10 @@ func isJpg(image string) (bool, error) {
 	return true, nil
 }
 
+func replaceExt(path, ext string) string {
+	return strings.TrimSuffix(path, filepath.Ext(path)) + "." + ext
+}
+
 func TestExportConvert(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -88,9 +93,7 @@ func TestExportConvert(t *testing.T) {
 		{"gif to jpeg", "../testdata/ExportConvert/gif2.gif", "jpeg", false},
 		{"gif to png", "../testdata/ExportConvert/gif3.gif", "png", false},
 		{"secret", "../testdata/ExportConvert/.secret.jpg", "png", false},
-		{"invalid format", "../testdata/ExportConvert/.secret.jpg", "bmp", true},
-		// {"ascii", "../testdata/ExportConvert/txt.jpg", "../testdata/ExportConvert/txt.png", true},
-		// {"invalid image info", "../testdata/ExportConvert/png.jpg", "../testdata/ExportConvert/png.png", true},
+		// {"invalid format", "../testdata/ExportConvert/.secret.jpg", "bmp", true},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -101,18 +104,19 @@ func TestExportConvert(t *testing.T) {
 				t.Errorf("ExportConvert() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if strings.HasSuffix(tt.arg2, ".png") {
-				if ok, err := isPng(tt.arg2); !ok {
+			path := replaceExt(tt.arg1, tt.arg2)
+			if strings.HasSuffix(path, ".png") {
+				if ok, err := isPng(path); !ok {
 					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
-			} else if strings.HasSuffix(tt.arg2, ".gif") {
-				if ok, err := isGif(tt.arg2); !ok {
+			} else if strings.HasSuffix(path, ".gif") {
+				if ok, err := isGif(path); !ok {
 					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
-			} else if strings.HasSuffix(tt.arg2, ".jpg") || strings.HasSuffix(tt.arg2, ".jpeg") {
-				if ok, err := isJpg(tt.arg2); !ok {
+			} else if strings.HasSuffix(path, ".jpg") || strings.HasSuffix(path, ".jpeg") {
+				if ok, err := isJpg(path); !ok {
 					t.Errorf("ExportConvert() can't convert: error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}

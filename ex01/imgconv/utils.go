@@ -25,7 +25,8 @@ func hasValidFileExtent(path string, ext string) bool {
 }
 
 func genOutPath(path string, outExt string) (outPath string) {
-	return replaceFileExtent(path, filepath.Ext(path), "."+outExt)
+	// return replaceFileExtent(path, filepath.Ext(path), "."+outExt)
+	return replaceExt(path, outExt)
 }
 
 func replaceFileExtent(filePath string, oldExt, newExt string) string {
@@ -39,4 +40,8 @@ func replaceFileExtent(filePath string, oldExt, newExt string) string {
 
 func replaceSuffix(s, old, new string) string {
 	return strings.TrimSuffix(s, old) + new
+}
+
+func replaceExt(path, ext string) string {
+	return strings.TrimSuffix(path, filepath.Ext(path)) + "." + ext
 }

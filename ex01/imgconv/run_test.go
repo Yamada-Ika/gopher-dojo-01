@@ -3,7 +3,6 @@ package imgconv_test
 import (
 	"io/fs"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"example.com/ex01/imgconv"
@@ -28,7 +27,9 @@ func TestRun(t *testing.T) {
 				"../testdata/Convert_/normal/test4.jpg",
 				"../testdata/Convert_/normal/test4.png"},
 			[]string{
-				"../testdata/Convert_/normal/test4.png"},
+				"../testdata/Convert_/normal/test3.png",
+				"../testdata/Convert_/normal/test4.png",
+			},
 		},
 		{"subdir", []string{"../testdata/Convert_/inSubDir"}, "jpg", "png", true,
 			[]string{
@@ -44,7 +45,9 @@ func TestRun(t *testing.T) {
 				"../testdata/Convert_/inSubDir/subdir/test4.png",
 			},
 			[]string{
+				"../testdata/Convert_/inSubDir/test3.png",
 				"../testdata/Convert_/inSubDir/test4.png",
+				"../testdata/Convert_/inSubDir/subdir/test3.png",
 				"../testdata/Convert_/inSubDir/subdir/test4.png",
 			},
 		},
@@ -66,17 +69,17 @@ func TestRun(t *testing.T) {
 func assertImageFiles(t *testing.T, files []string) {
 	t.Helper()
 	for _, file := range files {
-		if strings.HasSuffix(file, ".png") {
+		if filepath.Ext(file) == ".png" {
 			if ok, _ := isPng(file); !ok {
 				t.Errorf("assertImageFiles : %s is not png", file)
 				return
 			}
-		} else if strings.HasSuffix(file, ".gif") {
+		} else if filepath.Ext(file) == ".gif" {
 			if ok, _ := isGif(file); !ok {
 				t.Errorf("assertImageFiles : %s is not gif", file)
 				return
 			}
-		} else if strings.HasSuffix(file, ".jpg") || strings.HasSuffix(file, ".jpeg") {
+		} else if filepath.Ext(file) == ".jpg" || filepath.Ext(file) == ".jpeg" {
 			if ok, _ := isJpg(file); !ok {
 				t.Errorf("assertImageFiles : %s is not jpg", file)
 				return
