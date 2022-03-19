@@ -5,7 +5,6 @@ import (
 	"fmt"
 )
 
-// errorをまとめた変数
 var (
 	invalidArg = errors.New("error: invalid argument")
 	invalidExt = errors.New("error: invalid extension")
